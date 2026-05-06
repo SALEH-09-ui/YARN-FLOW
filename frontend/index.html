@@ -5,6 +5,7 @@
 <title>Yarn-Flow Management System</title>
 <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <header class="topbar">
@@ -12,74 +13,147 @@
 </header>
 
 <!-- ================= WELCOME ================= -->
+
 <section id="welcome" class="page active">
+
     <div class="card">
+
         <h1>WELCOME!</h1>
+
         <button onclick="show('login')">User Login</button>
-        <button class="outline" onclick="show('signup')">User Sign Up</button>
-        <button onclick="show('adminLogin')">Admin Login</button>
+
+        <button class="outline" onclick="show('signup')">
+            User Sign Up
+        </button>
+
+        <button onclick="show('adminLogin')">
+            Admin Login
+        </button>
+
     </div>
+
 </section>
 
 <!-- ================= USER SIGNUP ================= -->
+
 <section id="signup" class="page">
+
     <div class="card">
+
         <h2>User Sign Up</h2>
+
         <input id="su_name" placeholder="Customer Name">
+
         <input id="su_mobile" placeholder="Mobile Number">
+
         <input id="su_nid" placeholder="NID Number">
+
         <input id="su_pass" type="password" placeholder="Password">
+
         <button onclick="signup()">Register</button>
-        <p class="back" onclick="show('welcome')">← Back</p>
+
+        <p class="back" onclick="show('welcome')">
+            ← Back
+        </p>
+
     </div>
+
 </section>
 
 <!-- ================= USER LOGIN ================= -->
+
 <section id="login" class="page">
+
     <div class="card">
+
         <h2>User Login</h2>
+
         <input id="li_mobile" placeholder="Mobile Number">
+
         <input id="li_pass" type="password" placeholder="Password">
+
         <button onclick="login()">Login</button>
-        <p class="back" onclick="show('welcome')">← Back</p>
+
+        <p class="back" onclick="show('welcome')">
+            ← Back
+        </p>
+
     </div>
+
 </section>
 
 <!-- ================= USER DASHBOARD ================= -->
+
 <section id="dashboard" class="page">
+
     <h2 class="title">Dashboard</h2>
+
     <div class="grid">
-        <div class="box" onclick="loadProducts()">Product</div>
-        <div class="box" onclick="loadTransactions()">Transaction</div>
-        <div class="box" onclick="show('message')">Message</div>
-        <div class="box" onclick="show('profile')">Profile</div>
+
+        <div class="box" onclick="loadProducts()">
+            Product
+        </div>
+
+        <div class="box" onclick="loadTransactions()">
+            Transaction
+        </div>
+
+        <div class="box" onclick="loadUserMessages()">
+            Message
+        </div>
+
+        <div class="box" onclick="show('profile')">
+            Profile
+        </div>
+
     </div>
+
 </section>
 
 <!-- ================= USER PRODUCTS ================= -->
+
 <section id="product" class="page">
+
     <div class="card wide">
+
         <h2>Product List</h2>
+
         <table>
+
             <thead>
+
                 <tr>
                     <th>Product Name</th>
                     <th>Available Stock (KG)</th>
                     <th>Price Per KG</th>
                 </tr>
+
             </thead>
+
             <tbody id="productTable"></tbody>
+
         </table>
-        <button onclick="show('dashboard')">Back</button>
+
+        <button onclick="show('dashboard')">
+            Back
+        </button>
+
     </div>
+
 </section>
 
 <!-- ================= USER TRANSACTIONS ================= -->
+
 <section id="transaction" class="page">
+
     <div class="card wide">
+
         <h2>Transaction History</h2>
+
         <table>
+
             <thead>
+
                 <tr>
                     <th>Date</th>
                     <th>Product</th>
@@ -87,156 +161,308 @@
                     <th>Paid</th>
                     <th>Due</th>
                 </tr>
+
             </thead>
+
             <tbody id="transactionTable"></tbody>
+
         </table>
-        <button onclick="show('dashboard')">Back</button>
+
+        <button onclick="show('dashboard')">
+            Back
+        </button>
+
     </div>
+
 </section>
 
 <!-- ================= USER MESSAGE ================= -->
+
 <section id="message" class="page">
+
     <div class="card">
+
         <h2>Message Management</h2>
-        <textarea id="userMessage" placeholder="Write message..."></textarea>
-        <button onclick="sendMessage()">Send</button>
-        <button onclick="show('dashboard')">Back</button>
+
+        <div id="messageList"></div>
+
+        <textarea
+            id="userMessage"
+            placeholder="Write message..."
+        ></textarea>
+
+        <button onclick="sendMessage()">
+            Send
+        </button>
+
+        <button onclick="loadUserMessages()">
+            Refresh
+        </button>
+
+        <button onclick="show('dashboard')">
+            Back
+        </button>
+
     </div>
+
 </section>
 
 <!-- ================= USER PROFILE ================= -->
-<section id="profile" class="page">
-    <div class="card">
-        <h2>Profile</h2>
-        <p><b>Client Name:</b> <span id="profileName">User</span></p>
-        <p><b>Mobile:</b> <span id="profileMobile">---</span></p>
-        <p><b>NID:</b> <span id="profileNid">---</span></p>
 
-        <button class="danger" onclick="logout()">Logout</button>
-        <button onclick="show('dashboard')">Back</button>
+<section id="profile" class="page">
+
+    <div class="card">
+
+        <h2>Profile</h2>
+
+        <input id="profileEditName" placeholder="Name">
+
+        <input id="profileEditMobile" placeholder="Mobile">
+
+        <input id="profileEditNid" placeholder="NID">
+
+        <button onclick="updateProfile()">
+            Update Profile
+        </button>
+
+        <hr>
+
+        <button class="danger" onclick="logout()">
+            Logout
+        </button>
+
+        <button onclick="show('dashboard')">
+            Back
+        </button>
+
     </div>
+
 </section>
 
 <!-- ================= ADMIN LOGIN ================= -->
+
 <section id="adminLogin" class="page">
+
     <div class="card">
+
         <h2>Admin Login</h2>
+
         <input id="adminUser" placeholder="Admin Username">
+
         <input id="adminPass" type="password" placeholder="Admin Password">
-        <button onclick="adminLogin()">Login</button>
-        <p class="back" onclick="show('welcome')">← Back</p>
+
+        <button onclick="adminLogin()">
+            Login
+        </button>
+
+        <p class="back" onclick="show('welcome')">
+            ← Back
+        </p>
+
     </div>
+
 </section>
 
 <!-- ================= ADMIN DASHBOARD ================= -->
+
 <section id="adminDashboard" class="page">
+
     <h2 class="title">Admin Dashboard</h2>
+
     <div class="grid">
-        <div class="box" onclick="loadAdminProducts()">Manage Products</div>
-        <div class="box" onclick="loadUsers()">Transactions</div>
-        <div class="box" onclick="loadAdminMessages()">Messages</div>
-        <div class="box" onclick="adminLogout()">Logout</div>
+
+        <div class="box" onclick="loadAdminProducts()">
+            Manage Products
+        </div>
+
+        <div class="box" onclick="loadUsers()">
+            Transactions
+        </div>
+
+        <div class="box" onclick="loadAdminMessages()">
+            Messages
+        </div>
+
+        <div class="box" onclick="adminLogout()">
+            Logout
+        </div>
+
     </div>
+
 </section>
 
 <!-- ================= ADMIN PRODUCTS ================= -->
+
 <section id="adminProduct" class="page">
+
     <div class="card wide">
+
         <h2>Manage Products</h2>
+
         <table>
+
             <thead>
+
                 <tr>
                     <th>Name</th>
                     <th>Stock</th>
                     <th>Price</th>
                     <th>Action</th>
                 </tr>
+
             </thead>
+
             <tbody id="adminProductTable"></tbody>
+
         </table>
 
         <hr>
 
         <input id="pname" placeholder="Product Name">
+
         <input id="pqty" type="number" placeholder="Stock">
+
         <input id="pprice" type="number" placeholder="Price">
-        <button onclick="saveProduct()">Save Product</button>
-        <button onclick="show('adminDashboard')">Back</button>
+
+        <button onclick="saveProduct()">
+            Save Product
+        </button>
+
+        <button onclick="show('adminDashboard')">
+            Back
+        </button>
+
     </div>
+
 </section>
 
 <!-- ================= ADMIN TRANSACTIONS ================= -->
+
 <section id="adminTransaction" class="page">
+
     <div class="card wide">
+
         <h2>Select User</h2>
+
         <table>
+
             <thead>
+
                 <tr>
                     <th>User Name</th>
                     <th>Mobile</th>
                     <th>Action</th>
                 </tr>
+
             </thead>
+
             <tbody id="adminUserTable"></tbody>
+
         </table>
-        <button onclick="show('adminDashboard')">Back</button>
+
+        <button onclick="show('adminDashboard')">
+            Back
+        </button>
+
     </div>
+
 </section>
 
+<!-- ================= USER TRANSACTION DETAILS ================= -->
+
 <section id="adminUserTransactions" class="page">
+
     <div class="card wide">
+
         <h2>User Transaction History</h2>
 
         <p id="selectedUserInfo"></p>
 
         <table>
+
             <thead>
+
                 <tr>
                     <th>Date</th>
                     <th>Product</th>
                     <th>Qty</th>
                     <th>Paid</th>
                     <th>Due</th>
+                    <th>Action</th>
                 </tr>
+
             </thead>
+
             <tbody id="adminTransactionTable"></tbody>
+
         </table>
 
         <hr>
 
         <input id="tdate" type="date">
+
         <input id="tproduct" placeholder="Product">
+
         <input id="tqty" type="number" placeholder="Qty">
+
         <input id="tpaid" type="number" placeholder="Paid">
+
         <input id="tdue" type="number" placeholder="Due">
 
-        <button onclick="saveTransaction()">Save Transaction</button>
-        <button onclick="show('adminTransaction')">Back</button>
+        <button onclick="saveTransaction()">
+            Save Transaction
+        </button>
+
+        <button onclick="show('adminTransaction')">
+            Back
+        </button>
+
     </div>
+
 </section>
 
 <!-- ================= ADMIN MESSAGE ================= -->
+
 <section id="adminMessage" class="page">
+
     <div class="card wide">
+
         <h2>User Messages</h2>
 
         <table>
+
             <thead>
+
                 <tr>
                     <th>User</th>
                     <th>Message</th>
                     <th>Reply</th>
                 </tr>
+
             </thead>
+
             <tbody id="adminMessageTable"></tbody>
+
         </table>
 
-        <textarea id="adminReply" placeholder="Reply message..."></textarea>
-        <button onclick="sendReply()">Reply</button>
-        <button onclick="show('adminDashboard')">Back</button>
+        <textarea
+            id="adminReply"
+            placeholder="Reply message..."
+        ></textarea>
+
+        <button onclick="sendReply()">
+            Reply
+        </button>
+
+        <button onclick="show('adminDashboard')">
+            Back
+        </button>
+
     </div>
+
 </section>
 
 <script src="script.js"></script>
+
 </body>
 </html>
