@@ -1,252 +1,531 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sqlite3
-import os
 
 app = Flask(__name__)
 
-# ================= CORS =================
 CORS(app)
 
-# ================= PATHS =================
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(BASE_DIR, "yarnflow.db")
-FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend"))
+DB = "yarnflow.db"
 
-# ================= DB =================
+# ================= DATABASE =================
+
 def get_db():
+
     conn = sqlite3.connect(DB)
+
     conn.row_factory = sqlite3.Row
+
     return conn
 
-# ================= FRONTEND SERVE =================
-@app.route("/")
-def serve_index():
-    return send_from_directory(FRONTEND_DIR, "index.html")
+# ================= USER SIGNUP =================
 
-@app.route("/<path:path>")
-def serve_frontend_files(path):
-    return send_from_directory(FRONTEND_DIR, path)
-
-# ================= USER AUTH =================
 @app.route("/signup", methods=["POST"])
 def signup():
+
     d = request.json
 
-    # 🔴 REQUIRED VALIDATION (FIX)
-    required = ["name", "mobile", "nid", "password"]
-    for k in required:
-        if not d.get(k):
-            return jsonify({"error": f"{k} is required"}), 400
-
     conn = get_db()
+
     cur = conn.cursor()
 
     try:
+
         cur.execute("""
-            INSERT INTO users (name, mobile, nid, password)
-            VALUES (?, ?, ?, ?)
+
+            INSERT INTO users(
+                name,
+                mobile,
+                nid,
+                password
+            )
+
+            VALUES(?,?,?,?)
+
         """, (
-            d["name"].strip(),
-            d["mobile"].strip(),
-            d["nid"].strip(),
+
+            d["name"],
+            d["mobile"],
+            d["nid"],
             d["password"]
+
         ))
+
         conn.commit()
-        return jsonify({"message": "Signup successful"})
-    except sqlite3.IntegrityError:
-        return jsonify({"error": "Mobile already exists"}), 400
-    finally:
+
         conn.close()
+
+        return jsonify({
+            "message":"Signup successful"
+        })
+
+    except:
+
+        conn.close()
+
+        return jsonify({
+            "error":"Mobile already exists"
+        })
+
+# ================= USER LOGIN =================
 
 @app.route("/login", methods=["POST"])
 def login():
+
     d = request.json
 
-    if not d.get("mobile") or not d.get("password"):
-        return jsonify({"error": "Mobile and password required"}), 400
-
     conn = get_db()
+
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT id, name, mobile, nid
+
+        SELECT
+            id,
+            name,
+            mobile,
+            nid
+
         FROM users
+
         WHERE mobile=? AND password=?
-    """, (d["mobile"], d["password"]))
+
+    """, (
+
+        d["mobile"],
+        d["password"]
+
+    ))
 
     user = cur.fetchone()
+
     conn.close()
 
     if user:
+
         return jsonify(dict(user))
-    return jsonify({"error": "Invalid login"}), 401
 
-# ================= ADMIN AUTH =================
-@app.route("/admin/login", methods=["POST"])
-def admin_login():
-    d = request.json
-    if d.get("username") == "admin" and d.get("password") == "admin123":
-        return jsonify({"message": "Admin logged in"})
-    return jsonify({"error": "Invalid admin credentials"}), 401
+    return jsonify({
+        "error":"Invalid login"
+    })
 
-# ================= PRODUCTS =================
-@app.route("/products", methods=["GET"])
-def get_products():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM products")
-    data = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return jsonify(data)
+# ================= UPDATE PROFILE =================
 
-@app.route("/admin/product", methods=["POST"])
-def save_product():
+@app.route("/update-profile", methods=["POST"])
+def update_profile():
+
     d = request.json
 
-    if not d.get("name") or d.get("stock") is None or d.get("price") is None:
-        return jsonify({"error": "Invalid product data"}), 400
-
     conn = get_db()
-    cur = conn.cursor()
 
-    if d.get("id"):
-        cur.execute("""
-            UPDATE products
-            SET name=?, stock=?, price=?
-            WHERE id=?
-        """, (
-            d["name"].strip(),
-            int(d["stock"]),
-            int(d["price"]),
-            int(d["id"])
-        ))
-    else:
-        cur.execute("""
-            INSERT INTO products (name, stock, price)
-            VALUES (?, ?, ?)
-        """, (
-            d["name"].strip(),
-            int(d["stock"]),
-            int(d["price"])
-        ))
-
-    conn.commit()
-    conn.close()
-    return jsonify({"message": "Product saved"})
-
-# ================= USERS (ADMIN VIEW) =================
-@app.route("/admin/users")
-def admin_users():
-    conn = get_db()
-    cur = conn.cursor()
-    cur.execute("SELECT id, name, mobile FROM users")
-    data = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return jsonify(data)
-
-# ================= TRANSACTIONS =================
-@app.route("/transactions/<int:user_id>")
-def user_transactions(user_id):
-    conn = get_db()
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT date, product, qty, paid, due
-        FROM transactions
-        WHERE user_id=?
-        ORDER BY id DESC
-    """, (user_id,))
 
-    data = [dict(r) for r in cur.fetchall()]
-    conn.close()
-    return jsonify(data)
+        UPDATE users
 
-@app.route("/admin/transaction", methods=["POST"])
-def admin_add_transaction():
-    d = request.json
-    print("ADMIN TRANSACTION PAYLOAD:", d)
+        SET
+            name=?,
+            mobile=?,
+            nid=?
 
-    # 🔴 REQUIRED VALIDATION (FIX)
-    required = ["user_id", "date", "product", "qty", "paid", "due"]
-    for k in required:
-        if d.get(k) in [None, ""]:
-            return jsonify({"error": f"{k} is required"}), 400
+        WHERE id=?
 
-    conn = get_db()
-    cur = conn.cursor()
-
-    cur.execute("""
-        INSERT INTO transactions (user_id, date, product, qty, paid, due)
-        VALUES (?, ?, ?, ?, ?, ?)
     """, (
-        int(d["user_id"]),
-        d["date"].strip(),
-        d["product"].strip(),
-        int(d["qty"]),
-        int(d["paid"]),
-        int(d["due"])
+
+        d["name"],
+        d["mobile"],
+        d["nid"],
+        d["id"]
+
     ))
 
     conn.commit()
-    conn.close()
-    return jsonify({"message": "Transaction saved"})
 
-# ================= MESSAGES =================
-@app.route("/message", methods=["POST"])
-def send_message():
+    conn.close()
+
+    return jsonify({
+        "message":"Profile updated"
+    })
+
+# ================= ADMIN LOGIN =================
+
+@app.route("/admin/login", methods=["POST"])
+def admin_login():
+
     d = request.json
 
-    if not d.get("user_id") or not d.get("message"):
-        return jsonify({"error": "Invalid message"}), 400
+    if (
+        d["username"] == "admin"
+        and
+        d["password"] == "admin123"
+    ):
+
+        return jsonify({
+            "message":"Admin login successful"
+        })
+
+    return jsonify({
+        "error":"Invalid admin login"
+    })
+
+# ================= GET PRODUCTS =================
+
+@app.route("/products")
+def get_products():
 
     conn = get_db()
+
     cur = conn.cursor()
 
     cur.execute("""
-        INSERT INTO messages (user_id, message)
-        VALUES (?, ?)
-    """, (int(d["user_id"]), d["message"].strip()))
+
+        SELECT *
+
+        FROM products
+
+        ORDER BY id DESC
+
+    """)
+
+    data = [dict(r) for r in cur.fetchall()]
+
+    conn.close()
+
+    return jsonify(data)
+
+# ================= SAVE PRODUCT =================
+
+@app.route("/admin/product", methods=["POST"])
+def save_product():
+
+    d = request.json
+
+    conn = get_db()
+
+    cur = conn.cursor()
+
+    # UPDATE PRODUCT
+
+    if d.get("id"):
+
+        cur.execute("""
+
+            UPDATE products
+
+            SET
+                name=?,
+                stock=?,
+                price=?
+
+            WHERE id=?
+
+        """, (
+
+            d["name"],
+            d["stock"],
+            d["price"],
+            d["id"]
+
+        ))
+
+    # INSERT PRODUCT
+
+    else:
+
+        cur.execute("""
+
+            INSERT INTO products(
+                name,
+                stock,
+                price
+            )
+
+            VALUES(?,?,?)
+
+        """, (
+
+            d["name"],
+            d["stock"],
+            d["price"]
+
+        ))
 
     conn.commit()
+
     conn.close()
-    return jsonify({"message": "Message sent"})
+
+    return jsonify({
+        "message":"Product saved"
+    })
+
+# ================= ADMIN USERS =================
+
+@app.route("/admin/users")
+def admin_users():
+
+    conn = get_db()
+
+    cur = conn.cursor()
+
+    cur.execute("""
+
+        SELECT
+            id,
+            name,
+            mobile
+
+        FROM users
+
+        ORDER BY id DESC
+
+    """)
+
+    users = [dict(r) for r in cur.fetchall()]
+
+    conn.close()
+
+    return jsonify(users)
+
+# ================= USER TRANSACTIONS =================
+
+@app.route("/transactions/<int:user_id>")
+def get_transactions(user_id):
+
+    conn = get_db()
+
+    cur = conn.cursor()
+
+    cur.execute("""
+
+        SELECT *
+
+        FROM transactions
+
+        WHERE user_id=?
+
+        ORDER BY id DESC
+
+    """, (user_id,))
+
+    data = [dict(r) for r in cur.fetchall()]
+
+    conn.close()
+
+    return jsonify(data)
+
+# ================= SAVE TRANSACTION =================
+
+@app.route("/admin/transaction", methods=["POST"])
+def save_transaction():
+
+    d = request.json
+
+    conn = get_db()
+
+    cur = conn.cursor()
+
+    # UPDATE TRANSACTION
+
+    if d.get("id"):
+
+        cur.execute("""
+
+            UPDATE transactions
+
+            SET
+                date=?,
+                product=?,
+                qty=?,
+                paid=?,
+                due=?
+
+            WHERE id=?
+
+        """, (
+
+            d["date"],
+            d["product"],
+            d["qty"],
+            d["paid"],
+            d["due"],
+            d["id"]
+
+        ))
+
+    # INSERT TRANSACTION
+
+    else:
+
+        cur.execute("""
+
+            INSERT INTO transactions(
+
+                user_id,
+                date,
+                product,
+                qty,
+                paid,
+                due
+
+            )
+
+            VALUES(?,?,?,?,?,?)
+
+        """, (
+
+            d["user_id"],
+            d["date"],
+            d["product"],
+            d["qty"],
+            d["paid"],
+            d["due"]
+
+        ))
+
+    conn.commit()
+
+    conn.close()
+
+    return jsonify({
+        "message":"Transaction saved"
+    })
+
+# ================= SEND MESSAGE =================
+
+@app.route("/message", methods=["POST"])
+def send_message():
+
+    d = request.json
+
+    conn = get_db()
+
+    cur = conn.cursor()
+
+    cur.execute("""
+
+        INSERT INTO messages(
+
+            user_id,
+            message
+
+        )
+
+        VALUES(?,?)
+
+    """, (
+
+        d["user_id"],
+        d["message"]
+
+    ))
+
+    conn.commit()
+
+    conn.close()
+
+    return jsonify({
+        "message":"Message sent"
+    })
+
+# ================= USER MESSAGE LIST =================
+
+@app.route("/user/messages/<int:user_id>")
+def user_messages(user_id):
+
+    conn = get_db()
+
+    cur = conn.cursor()
+
+    cur.execute("""
+
+        SELECT
+            message,
+            reply
+
+        FROM messages
+
+        WHERE user_id=?
+
+        ORDER BY id DESC
+
+    """, (user_id,))
+
+    data = [dict(r) for r in cur.fetchall()]
+
+    conn.close()
+
+    return jsonify(data)
+
+# ================= ADMIN MESSAGE LIST =================
 
 @app.route("/admin/messages")
 def admin_messages():
+
     conn = get_db()
+
     cur = conn.cursor()
 
     cur.execute("""
-        SELECT m.id, u.name, m.message, m.reply
+
+        SELECT
+
+            m.id,
+            u.name,
+            m.message,
+            m.reply
+
         FROM messages m
-        JOIN users u ON m.user_id = u.id
+
+        JOIN users u
+        ON m.user_id = u.id
+
         ORDER BY m.id DESC
+
     """)
+
     data = [dict(r) for r in cur.fetchall()]
+
     conn.close()
+
     return jsonify(data)
 
+# ================= ADMIN REPLY =================
+
 @app.route("/admin/reply", methods=["POST"])
-def reply_message():
+def admin_reply():
+
     d = request.json
 
-    if not d.get("reply") or not d.get("message_id"):
-        return jsonify({"error": "Invalid reply"}), 400
-
     conn = get_db()
+
     cur = conn.cursor()
 
     cur.execute("""
+
         UPDATE messages
+
         SET reply=?
+
         WHERE id=?
-    """, (d["reply"].strip(), int(d["message_id"])))
+
+    """, (
+
+        d["reply"],
+        d["message_id"]
+
+    ))
 
     conn.commit()
+
     conn.close()
-    return jsonify({"message": "Reply sent"})
+
+    return jsonify({
+        "message":"Reply sent"
+    })
 
 # ================= RUN =================
+
 if __name__ == "__main__":
+
     app.run(debug=True)
