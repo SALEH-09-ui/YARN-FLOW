@@ -1,0 +1,16 @@
+USE YarnFlow_db;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    mobile VARCHAR(20) UNIQUE NOT NULL,
+    nid VARCHAR(50) NOT NULL,
+    password VARCHAR(100) NOT NULL
+);
+
+-- Sign-in of a user:
+INSERT INTO users(name, mobile, nid, password) 
+VALUES('Saleh', '01711111111', '123456789', '1234');
+
+-- Login of that user:
+SELECT * FROM users WHERE mobile='01711111111' AND password='1234';
