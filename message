@@ -1,0 +1,10 @@
+CREATE TABLE messages(
+id INT AUTO_INCREMENT PRIMARY KEY,
+user_id INT NOT NULL,
+message TEXT NOT NULL,
+reply TEXT,
+FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+(send msg) INSERT INTO messages( user_id, message ) VALUES(  1,  'Product delivery kobe hobe?' );
+(admin reply) UPDATE messages SET reply='Delivery kalke hobe' WHERE id=1;
