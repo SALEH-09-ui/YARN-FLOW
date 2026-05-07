@@ -1,0 +1,20 @@
+CREATE TABLE transactions(
+id INT AUTO_INCREMENT PRIMARY KEY,
+user_id INT NOT NULL,
+ date DATE NOT NULL,
+ product VARCHAR(100) NOT NULL,
+qty INT NOT NULL,
+paid INT NOT NULL,
+due INT NOT NULL,
+FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+INSERT INTO transactions( user_id,  date,  product,  qty,   paid,   due)
+VALUES( 1, '2026-05-07', '42/1 Promax',50,  20000,  5000 );
+
+
+SELECT * FROM transactions WHERE user_id=1;
+
+UPDATE transactions SET  qty=70, paid=25000, due=300 WHERE id=1;
+
+DELETE FROM transactions WHERE id=1;
