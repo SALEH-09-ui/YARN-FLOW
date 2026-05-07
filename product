@@ -1,0 +1,23 @@
+CREATE TABLE products(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    stock INT NOT NULL,
+    price INT NOT NULL
+);
+
+-- insert product
+INSERT INTO products(name, stock, price)
+VALUES ('54/1 Moltazim', 2780, 6003);
+
+-- add product
+INSERT INTO products(name, stock, price)
+VALUES ('30/1 Cotton', 700, 4500);
+
+-- update product
+UPDATE products
+SET stock = 900, price = 5500
+WHERE id = 1;
+
+-- delete product
+DELETE FROM products
+WHERE id = 1;
